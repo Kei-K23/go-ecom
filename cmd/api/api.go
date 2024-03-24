@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Kei-K23/go-ecom/services/users"
 	"github.com/gorilla/mux"
 )
 
@@ -19,7 +20,11 @@ func (s *APIServer) Run() error {
 
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
-	fmt.Printf("Listing on : %s\n", s.addr)
+	userHandler := users.Handler{}
+	// register user routes
+	userHandler.RegisterRoutes(subRouter)
+
+	fmt.Printf("Listing on %s\n", s.addr)
 	return http.ListenAndServe(s.addr, router)
 }
 
