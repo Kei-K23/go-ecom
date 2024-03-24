@@ -7,6 +7,7 @@ import (
 	"github.com/Kei-K23/go-ecom/services/auth"
 	"github.com/Kei-K23/go-ecom/types"
 	"github.com/Kei-K23/go-ecom/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -36,6 +37,11 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		validationErr := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload: %v", validationErr))
 	}
 
 	_, err := h.store.GetUserByEmail(payload.Email)
