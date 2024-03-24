@@ -1,17 +1,21 @@
 package users
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/Kei-K23/go-ecom/services/auth"
 	"github.com/Kei-K23/go-ecom/types"
 	"github.com/Kei-K23/go-ecom/utils"
 	"github.com/gorilla/mux"
 )
 
-type Handler struct{}
+type Handler struct {
+	store types.UserStore
+}
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(store types.UserStore) *Handler {
+	return &Handler{store}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -34,4 +38,31 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, err := h.store.GetUserByEmail(payload.Email)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s not found", payload.Email))
+		return
+	}
+
+	hashedPassword, err := auth.HashPassword(payload.Password)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("cannot hash password"))
+		return
+	}
+
+	err = h.store.CreateUser(types.User{
+		FirstName: payload.FirstName,
+		LastName:  payload.LastName,
+		Email:     payload.Email,
+		Password:  hashedPassword,
+	})
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusCreated, nil)
 }
