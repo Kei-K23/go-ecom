@@ -12,44 +12,42 @@ type Store struct {
 }
 
 func NewStore(db *sql.DB) *Store {
-	return &Store{db}
+	return &Store{db: db}
 }
-
 func (s *Store) GetUserByEmail(email string) (*types.User, error) {
-	stmt, err := s.db.Prepare("SELECT * FROM users WHERE email = ?")
+	// Prepare SQL statement
 
+	stmt, err := s.db.Prepare("SELECT * FROM users WHERE email = ?")
 	if err != nil {
 		return nil, err
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(email)
 
-	if err != nil {
+	// Execute query and scan the result into a User struct
+	var u types.User
+	err = stmt.QueryRow(email).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
 		return nil, err
 	}
 
-	u := new(types.User)
-
-	for rows.Next() {
-		u, err = scanRowIntoUser(rows)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	if u.ID == 0 {
-		return nil, fmt.Errorf("user not found")
-	}
-
-	return u, nil
+	return &u, nil
 }
-
 func (s *Store) GetUserByID(id int) (*types.User, error) {
 	return nil, nil
 }
 
 func (s *Store) CreateUser(user types.User) error {
+	stmt, err := s.db.Prepare("INSERT INTO users (first_name, last_name, email, password) VALUES (?, ?, ?, ?)")
+
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(user.FirstName, user.LastName, user.Email, user.Password)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

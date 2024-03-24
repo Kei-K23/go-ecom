@@ -21,6 +21,7 @@ func (s *APIServer) Run() error {
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	useStore := users.NewStore(s.db)
+
 	userHandler := users.NewHandler(useStore)
 	// register user routes
 	userHandler.RegisterRoutes(subRouter)

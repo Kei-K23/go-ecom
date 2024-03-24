@@ -16,13 +16,13 @@ type Handler struct {
 }
 
 func NewHandler(store types.UserStore) *Handler {
-	return &Handler{store}
+	return &Handler{store: store}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", h.handleLogin).Methods("POST")
 
-	router.HandleFunc("/login", h.handleRegister).Methods("POST")
+	router.HandleFunc("/register", h.handleRegister).Methods("POST")
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +46,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	_, err := h.store.GetUserByEmail(payload.Email)
 
-	if err != nil {
+	if err == nil {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s not found", payload.Email))
 		return
 	}
@@ -70,5 +70,9 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, nil)
+	utils.WriteJSON(w, http.StatusCreated, types.CreatedUserRes{
+		FirstName: payload.FirstName,
+		LastName:  payload.LastName,
+		Email:     payload.Email,
+	})
 }
