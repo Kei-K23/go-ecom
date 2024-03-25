@@ -23,6 +23,7 @@ func (s *APIServer) Run() error {
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
 	subRouter.Use(middleware.LoggingMiddleware)
+
 	userStore := users.NewStore(s.db)
 	productsStore := products.NewStore(s.db)
 
