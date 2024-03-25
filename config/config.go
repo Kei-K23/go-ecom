@@ -13,6 +13,7 @@ type Config struct {
 	DBPass string
 	DBAddr string
 	DBName string
+	Secret string
 }
 
 var Env = initConfig()
@@ -29,6 +30,7 @@ func initConfig() Config {
 		DBPass: getEnv("DB_PASS", "dbeaver"),
 		DBAddr: getEnv("DB_ADDR", "127.0.0.1:3306"),
 		DBName: getEnv("DB_NAME", "go-ecom"),
+		Secret: getEnv("SECRET_KEY", "this-is-secret-key"),
 	}
 }
 

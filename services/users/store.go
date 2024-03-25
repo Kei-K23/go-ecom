@@ -25,7 +25,7 @@ func (s *Store) GetUserByEmail(email string) (*types.User, error) {
 
 	// Execute query and scan the result into a User struct
 	var u types.User
-	err = stmt.QueryRow(email).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password)
+	err = stmt.QueryRow(email).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password, &u.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("user not found")
 	} else if err != nil {
@@ -49,22 +49,4 @@ func (s *Store) CreateUser(user types.User) error {
 		return err
 	}
 	return nil
-}
-
-func scanRowIntoUser(row *sql.Rows) (*types.User, error) {
-	user := new(types.User)
-	err := row.Scan(
-		&user.ID,
-		&user.FirstName,
-		&user.LastName,
-		&user.Email,
-		&user.Password,
-		&user.CreatedAt,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
 }
