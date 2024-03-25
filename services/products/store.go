@@ -94,3 +94,39 @@ func (s *Store) CreateProduct(p types.CreateProduct) (*types.CreateProduct, erro
 
 	return &product, nil
 }
+
+func (s *Store) UpdateProduct(p types.CreateProduct, id int) (*types.CreateProduct, error) {
+	// Prepare the SQL statement for updating the product
+	stmt, err := s.db.Prepare("UPDATE products SET name=?, description=?, price=?, quantity=? WHERE id=?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	// Execute the update statement with the provided values
+	_, err = stmt.Exec(p.Name, p.Description, p.Price, p.Quantity, id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the updated product
+	return &p, nil
+}
+
+func (s *Store) DeleteProduct(id uint) error {
+	// Prepare the SQL statement for updating the product
+	stmt, err := s.db.Prepare("DELETE TABLE products WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

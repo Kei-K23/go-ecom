@@ -3,6 +3,7 @@ package products
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Kei-K23/go-ecom/middleware"
 	"github.com/Kei-K23/go-ecom/types"
@@ -25,6 +26,8 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 
 	productsRouter.HandleFunc("", h.createProduct).Methods(http.MethodPost)
 	productsRouter.HandleFunc("", h.getProducts).Methods(http.MethodGet)
+	productsRouter.HandleFunc("/{id}", h.getProductById).Methods(http.MethodGet)
+	productsRouter.HandleFunc("/{id}", h.updateProduct).Methods(http.MethodPut)
 }
 
 func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
@@ -61,5 +64,59 @@ func (h *Handler) getProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, p)
+	utils.WriteJSON(w, http.StatusOK, p)
+}
+
+func (h *Handler) getProductById(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id parameter is not validated"))
+		return
+	}
+
+	p, err := h.store.GetProductByID(id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, p)
+}
+
+func (h *Handler) updateProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id parameter is not validated"))
+		return
+	}
+
+	// get JSON payload
+	var payload types.CreateProduct
+
+	// parse payload to json
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		validationErr := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload: %v", validationErr))
+	}
+
+	p, err := h.store.UpdateProduct(payload, id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, p)
 }

@@ -9,6 +9,9 @@ type UserStore interface {
 type ProductStore interface {
 	CreateProduct(p CreateProduct) (*CreateProduct, error)
 	GetAllProducts() ([]Product, error)
+	GetProductByID(id int) (*Product, error)
+	UpdateProduct(p CreateProduct, id int) (*CreateProduct, error)
+	DeleteProduct(id uint) error
 }
 
 type RegisterUserPayload struct {
