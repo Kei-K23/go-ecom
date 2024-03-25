@@ -6,6 +6,10 @@ type UserStore interface {
 	CreateUser(user User) error
 }
 
+type ProductStore interface {
+	CreateProduct(p CreateProduct) (*CreateProduct, error)
+}
+
 type RegisterUserPayload struct {
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name" validate:"required"`
@@ -31,4 +35,20 @@ type CreatedUserRes struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
+}
+
+type Product struct {
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Price       int    `json:"price"`
+	Quantity    int    `json:"quantity"`
+	CreatedAt   string `json:"created_at"`
+}
+
+type CreateProduct struct {
+	Name        string `json:"name" validate:"required"`
+	Description string `json:"description" validate:"required"`
+	Price       int    `json:"price" validate:"required"`
+	Quantity    int    `json:"quantity" validate:"required"`
 }
