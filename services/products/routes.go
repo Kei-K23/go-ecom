@@ -24,6 +24,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	productsRouter.Use(middleware.CheckAuthMiddleware)
 
 	productsRouter.HandleFunc("", h.createProduct).Methods(http.MethodPost)
+	productsRouter.HandleFunc("", h.getProducts).Methods(http.MethodGet)
 }
 
 func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +43,18 @@ func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p, err := h.store.CreateProduct(payload)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusCreated, p)
+}
+
+func (h *Handler) getProducts(w http.ResponseWriter, r *http.Request) {
+
+	p, err := h.store.GetAllProducts()
 
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
