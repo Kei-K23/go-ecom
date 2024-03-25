@@ -11,7 +11,7 @@ type ProductStore interface {
 	GetAllProducts() ([]Product, error)
 	GetProductByID(id int) (*Product, error)
 	UpdateProduct(p CreateProduct, id int) (*CreateProduct, error)
-	DeleteProduct(id uint) error
+	DeleteProduct(id int) error
 }
 
 type RegisterUserPayload struct {
@@ -19,6 +19,10 @@ type RegisterUserPayload struct {
 	LastName  string `json:"last_name" validate:"required"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=3,max=20"`
+}
+
+type DeleteProductRes struct {
+	Message string `json:"message"`
 }
 
 type LoginUserPayload struct {

@@ -114,9 +114,9 @@ func (s *Store) UpdateProduct(p types.CreateProduct, id int) (*types.CreateProdu
 	return &p, nil
 }
 
-func (s *Store) DeleteProduct(id uint) error {
+func (s *Store) DeleteProduct(id int) error {
 	// Prepare the SQL statement for updating the product
-	stmt, err := s.db.Prepare("DELETE TABLE products WHERE id=?")
+	stmt, err := s.db.Prepare("DELETE FROM products WHERE id=?")
 	if err != nil {
 		return err
 	}

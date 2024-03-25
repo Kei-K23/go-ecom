@@ -28,6 +28,7 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 	productsRouter.HandleFunc("", h.getProducts).Methods(http.MethodGet)
 	productsRouter.HandleFunc("/{id}", h.getProductById).Methods(http.MethodGet)
 	productsRouter.HandleFunc("/{id}", h.updateProduct).Methods(http.MethodPut)
+	productsRouter.HandleFunc("/{id}", h.deleteProduct).Methods(http.MethodDelete)
 }
 
 func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
@@ -111,6 +112,18 @@ func (h *Handler) updateProduct(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload: %v", validationErr))
 	}
 
+	existProduct, err := h.store.GetProductByID(id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("error getting product"))
+		return
+	}
+
+	if existProduct.ID != id {
+		utils.WriteError(w, http.StatusNotFound, fmt.Errorf("product not found"))
+		return
+	}
+
 	p, err := h.store.UpdateProduct(payload, id)
 
 	if err != nil {
@@ -119,4 +132,38 @@ func (h *Handler) updateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, p)
+}
+
+func (h *Handler) deleteProduct(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("id parameter is not validated"))
+		return
+	}
+
+	existProduct, err := h.store.GetProductByID(id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, fmt.Errorf("error getting product"))
+		return
+	}
+
+	if existProduct.ID != id {
+		utils.WriteError(w, http.StatusNotFound, fmt.Errorf("product not found"))
+		return
+	}
+
+	err = h.store.DeleteProduct(id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, types.DeleteProductRes{
+		Message: fmt.Sprintf("Product ID %v deleted", id),
+	})
 }
