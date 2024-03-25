@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/Kei-K23/go-ecom/config"
@@ -23,32 +24,32 @@ func main() {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	driver, err := mysqlMigrate.WithInstance(db, &mysqlMigrate.Config{})
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	m, err := migrate.NewWithDatabaseInstance("file://cmd/migrate/migrations", "mysql", driver)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	cmd := os.Args[(len(os.Args) - 1)]
 
 	if cmd == "up" {
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	if cmd == "down" {
 		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }

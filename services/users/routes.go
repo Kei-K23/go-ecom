@@ -2,9 +2,11 @@ package users
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/Kei-K23/go-ecom/config"
+	"github.com/Kei-K23/go-ecom/middleware"
 	"github.com/Kei-K23/go-ecom/services/auth"
 	"github.com/Kei-K23/go-ecom/types"
 	"github.com/Kei-K23/go-ecom/utils"
@@ -21,9 +23,36 @@ func NewHandler(store types.UserStore) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods("POST")
+	// Create a subrouter for /users route
+	usersRouter := router.PathPrefix("/users").Subrouter()
 
-	router.HandleFunc("/register", h.handleRegister).Methods("POST")
+	// Apply middleware to the subrouter
+	usersRouter.Use(middleware.CheckAuthMiddleware)
+
+	// Define routes for /users subrouter
+	usersRouter.HandleFunc("", h.handleGetUser).Methods(http.MethodGet)
+
+	router.HandleFunc("/login", h.handleLogin).Methods(http.MethodPost)
+	router.HandleFunc("/register", h.handleRegister).Methods(http.MethodPost)
+}
+
+func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request) {
+
+	// check request has auth token
+	claims := r.Context().Value(middleware.ClaimsContextKey).(*auth.JWTClaim)
+	u, err := h.store.GetUserByID(claims.UserId)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid user credential"))
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, types.CreatedUserRes{
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		Email:     u.Email,
+	})
+
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +85,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.CreateJWT([]byte(config.Env.Secret), u.ID)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})

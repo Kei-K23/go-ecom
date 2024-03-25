@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/Kei-K23/go-ecom/cmd/api"
 	"github.com/Kei-K23/go-ecom/config"
@@ -23,7 +24,7 @@ func main() {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	initDB(db)
@@ -31,14 +32,14 @@ func main() {
 	server := api.NewAPIServer(":8080", db)
 
 	if err := server.Run(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func initDB(db *sql.DB) {
 	err := db.Ping()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	fmt.Println("Successfully initialized database")

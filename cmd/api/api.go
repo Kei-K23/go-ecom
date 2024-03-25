@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Kei-K23/go-ecom/middleware"
 	"github.com/Kei-K23/go-ecom/services/users"
 	"github.com/gorilla/mux"
 )
@@ -20,6 +21,7 @@ func (s *APIServer) Run() error {
 
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
+	subRouter.Use(middleware.LoggingMiddleware)
 	useStore := users.NewStore(s.db)
 
 	userHandler := users.NewHandler(useStore)

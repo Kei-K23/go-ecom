@@ -16,7 +16,6 @@ func NewStore(db *sql.DB) *Store {
 }
 func (s *Store) GetUserByEmail(email string) (*types.User, error) {
 	// Prepare SQL statement
-
 	stmt, err := s.db.Prepare("SELECT * FROM users WHERE email = ?")
 	if err != nil {
 		return nil, err
@@ -35,7 +34,23 @@ func (s *Store) GetUserByEmail(email string) (*types.User, error) {
 	return &u, nil
 }
 func (s *Store) GetUserByID(id int) (*types.User, error) {
-	return nil, nil
+	// Prepare SQL statement
+	stmt, err := s.db.Prepare("SELECT * FROM users WHERE id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	// Execute query and scan the result into a User struct
+	var u types.User
+	err = stmt.QueryRow(id).Scan(&u.ID, &u.FirstName, &u.LastName, &u.Email, &u.Password, &u.CreatedAt)
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	} else if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
 }
 
 func (s *Store) CreateUser(user types.User) error {
