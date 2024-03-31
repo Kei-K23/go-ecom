@@ -1,4 +1,4 @@
-# Go Dummy E-Commerce API
+# Go General E-Commerce API
 
 This is a simple e-commerce API with JWT authentication implemented in Go.
 
